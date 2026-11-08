@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#183d2d" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%232d563a'/%3E%3Cpath d='M16 4l3.2 8.8L28 16l-8.8 3.2L16 28l-3.2-8.8L4 16l8.8-3.2z' fill='%23f4df91'/%3E%3C/svg%3E" />
+  <title>Meadowlight — A Little RPG</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="game-shell" aria-label="Meadowlight RPG game">
+    <canvas id="game" aria-label="A pixel-art meadow. Move with the arrow keys or touch controls."></canvas>
+
+    <header class="topbar">
+      <div class="brand-mark"><span class="brand-sun">✦</span><div><strong>MEADOWLIGHT</strong><small>THE GREENWOLD</small></div></div>
+      <div class="day-pill"><span class="sun-icon">☀</span><span>DAY 01</span><i></i><span>08:14</span></div>
+      <button class="sound-button" id="soundBtn" aria-label="Toggle sound" title="Sound: off"><span>♪</span></button>
+    </header>
+
+    <section class="quest-card" aria-live="polite">
+      <div class="quest-heading"><span class="quest-pin">✦</span><div><small>YOUR LITTLE JOURNEY</small><h1 id="questTitle">A kind hello</h1></div></div>
+      <p id="questText">Find Mira in the meadow and say hello.</p>
+      <div class="quest-progress"><div class="progress-track"><span id="progressFill"></span></div><b id="progressText">0 / 1</b></div>
+    </section>
+
+    <div class="location-tag"><span class="location-dot"></span> SUNMEADOW <span class="tag-divider">/</span> <span id="weatherText">CLEAR SKIES</span></div>
+    <div class="toast" id="toast" role="status"></div>
+
+    <div class="bottom-ui">
+      <div class="hint-pill" id="hint"><span class="hint-key">A</span><span>Explore the meadow</span></div>
+      <div class="mobile-controls" aria-label="Touch controls">
+        <div class="dpad" aria-label="Movement controls">
+          <button class="dpad-btn up" data-dir="up" aria-label="Move up">▲</button>
+          <button class="dpad-btn left" data-dir="left" aria-label="Move left">◀</button>
+          <button class="dpad-btn down" data-dir="down" aria-label="Move down">▼</button>
+          <button class="dpad-btn right" data-dir="right" aria-label="Move right">▶</button>
+          <span class="dpad-center"></span>
+        </div>
+        <button class="action-button" id="actionBtn" aria-label="Interact"><span>A</span><small>ACT</small></button>
+      </div>
+      <div class="control-note"><span>MOVE</span> <kbd>WASD</kbd> <kbd>↑↓←→</kbd><span class="note-separator">·</span><span>INTERACT</span> <kbd>SPACE</kbd></div>
+    </div>
+
+    <div class="dialogue-wrap" id="dialogue" aria-hidden="true">
+      <div class="dialogue-box">
+        <div class="speaker-badge" id="speakerBadge">MIRA</div>
+        <p id="dialogueText"></p>
+        <button id="dialogueNext" class="dialogue-next" aria-label="Continue dialogue">▼</button>
+        <span class="dialogue-help">TAP OR PRESS SPACE</span>
+      </div>
+    </div>
+    <div class="vignette"></div>
+  </main>
+  <script src="game.js"></script>
+</body>
+</html>
