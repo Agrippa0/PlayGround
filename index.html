@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>ROOF RUN — Bali</title>
+<style>
+:root{--ink:#14211a;--lime:#d8ff43;--cream:#fffdf5;--orange:#ff7a32}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#9ad4cf;font-family:Arial,Helvetica,sans-serif;color:var(--ink);touch-action:none}
+canvas{display:block;width:100%;height:100%}
+#hud{position:fixed;inset:0;pointer-events:none}
+.top{position:absolute;top:24px;left:28px;right:28px;display:flex;align-items:flex-start;justify-content:space-between}
+.brand{font-weight:950;font-size:24px;letter-spacing:-1.5px;line-height:.82;text-transform:uppercase}.brand b{color:#fff;text-shadow:0 2px 12px #193d36}.brand span{display:block;font-size:10px;letter-spacing:5px;margin-top:8px;color:var(--lime)}
+.stats{display:flex;gap:8px}.pill{background:rgba(255,253,245,.92);border:2px solid rgba(20,33,26,.12);border-radius:16px;padding:8px 13px;box-shadow:0 8px 20px rgba(19,51,43,.12)}.pill small{display:block;font-size8;font-size:8px;letter-spacing:1.6px;font-weight:900;opacity:.55}.pill strong{display:block;font-size:20px;font-weight:950;margin-top:1px}
+#timer{text-align:center;position:absolute;left:50%;top:22px;transform:translateX(-50%);background:var(--ink);color:white;border-radius:18px;padding:8px 18px 7px;box-shadow:0 8px 20px #193d3633}.clock{font-size:28px;font-weight:950;line-height:1}.clock small{font-size:10px;color:var(--lime);letter-spacing:2px}
+#progress{position:absolute;left:28px;bottom:28px;width:220px}.route{height:8px;background:rgba(255,255,255,.5);border-radius:8px;overflow:hidden}.route i{display:block;height:100%;width:4%;background:var(--lime);border-radius:8px;box-shadow:0 0 10px var(--lime)}.route-label{display:flex;justify-content:space-between;margin-top:7px;font-size9px;font-weight:900;letter-spacing:1.4px;text-transform:uppercase}
+#combo{position:absolute;right:28px;bottom:28px;text-align:right}.combo-num{font-size:44px;font-weight:950;font-style:italic;letter-spacing:-3px}.combo-num span{font-size15px;letter-spacing:1px;color:white;text-shadow:0 2px 8px #17463a}.combo-name{display:inline-block;background:var(--lime);padding:6px 9px;border-radius:8px;font-size11px;font-weight:950;text-transform:uppercase;transform:rotate(-2deg)}
+#centerMsg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);text-align:center;transition:.25s}.tag{background:var(--lime);display:inline-block;padding:7px 12px;border-radius:20px;font-size11px;font-weight:950;letter-spacing:2px;text-transform:uppercase}.title{font-size:70px;line-height:.82;letter-spacing:-6px;text-transform:uppercase;font-weight:950;color:white;text-shadow:0 5px 24px rgba(18,44,38,.3);margin:16px 0}.title em{display:block;font-style:normal;color:var(--lime)}
+.btn{pointer-events:auto;border:0;border-radius:30px;background:var(--ink);color:white;font-size13px;font-weight:950;padding:15px 22px;text-transform:uppercase;letter-spacing:1px;cursor:pointer;box-shadow:0 10px 30px rgba(20,33,26,.22)}
+#touch{position:absolute;inset:auto 18px 20px;display:none;justify-content:space-between;pointer-events:none}.controls{display:flex;gap:8px}.tc{pointer-events:auto;width:62px;height:62px;border-radius:50%;border:2px solid rgba(255,255,255,.7);background:rgba(20,33,26,.72);color:white;font-size22px;font-weight:900;backdrop-filter:blur(5px)}#jumpBtn{background:var(--lime);color:var(--ink);border:0}
+#toast{position:absolute;left:50%;top:120px;transform:translateX(-50%) scale(.8);background:var(--orange);color:white;border-radius:14px;padding:9px 14px;font-size12px;font-weight:950;letter-spacing:1px;opacity:0;transition:.2s}.show{opacity:1!important;transform:translateX(-50%) scale(1)!important}
+@media(max-width:700px),(pointer:coarse){#touch{display:flex}.top{top:12px;left:12px;right:12px}.brand{font-size18px}.stats{display:none}#timer{top:58px}.pill{padding:7px}.title{font-size48px}.tag{font-size9px}#progress{left:12px;bottom:92px;width:150px}#combo{right:12px;bottom:92px}.combo-num{font-size34px}}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hud">
+  <div class="top"><div class="brand">ROOF <b>RUN</b><span>BALI • 01</span></div><div class="stats"><div class="pill"><small>CHECKPOINT</small><strong id="cp">0 / 6</strong></div><div class="pill"><small>SHARDS</small><strong id="shards">0</strong></div></div></div>
+  <div id="timer"><div class="clock"><small>TIME</small><br><span id="time">00:00</span></div></div>
+  <div id="progress"><div class="route"><i id="bar"></i></div><div class="route-label"><span>Uluwatu Hotel</span><span>Skyline</span></div></div>
+  <div id="combo"><div class="combo-num"><span>×</span><b id="comboNum">1</b></div><div class="combo-name" id="comboName">Perfect flow</div></div>
+  <div id="toast">SHARD COLLECTED</div>
+  <div id="centerMsg"><div class="tag">Bali rooftop run</div><div class="title">Jump the<em>Skyline</em></div><button class="btn" id="start">Start run</button></div>
+  <div id="touch"><div class="controls"><button class="tc" id="left">←</button><button class="tc" id="right">→</button></div><button class="tc" id="jumpBtn">↑</button></div>
+</div>
+<script>
+const canvas=document.getElementById('c'),ctx=canvas.getContext('2d');let W,H,DPR;
+function resize(){DPR=Math.min(devicePixelRatio||1,2);W=innerWidth;H=innerHeight;canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0)}addEventListener('resize',resize);resize();
+let started=false,won=false,crash=false,t0=0,cam=0,keys={},combo=1,shards=0,checkpoint=0,lastCP=0;
+const player={x:0,y:4,vx:0,vy:0,w:1.1,h:1.8,on:false,streak:0};
+const platforms=[{x:-5,y:0,w:7,d:5},{x:4,y:1,w:5,d:5},{x:10.5,y:2.2,w:5,d:5},{x:17,y:3.1,w:6,d:5},{x:25,y:2.2,w:5,d:5},{x:32,y:4,w:7,d:5},{x:42,y:5,w:6,d:5},{x:51,y:6.2,w:8,d:5},{x:62,y:7.2,w:7,d:5},{x:72,y:8.5,w:9,d:5}];
+const gems=[{x:6,y:3.2,got:false},{x:13,y:4.5,got:false},{x:20,y:5.5,got:false},{x:27.5,y:4.5,got:false},{x:35,y:6.2,got:false},{x:45,y:7.2,got:false},{x:55,y:8.4,got:false},{x:65.5,y:9.4,got:false},{x:76,y:10.7,got:false}];
+function project(x,y,z=0){let horizon=H*.36,scale=Math.min(W/1100,H/700)*1.15;let rx=(x-cam)*scale*22+W*.42;let ry=horizon+(H*.62-y*scale*24)+z*0;return{x:rx,y:ry,s:scale}}
+function poly(points,fill){ctx.beginPath();ctx.moveTo(points[0][0],points[0][1]);for(let i=1;i<points.length;i++)ctx.lineTo(points[i][0],points[i][1]);ctx.closePath();ctx.fillStyle=fill;ctx.fill()}
+function roundRect(x,y,w,h,r,fill){ctx.beginPath();ctx.roundRect(x,y,w,h,r);ctx.fillStyle=fill;ctx.fill()}
+function drawSky(t){let g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#78bab8');g.addColorStop(.48,'#b5ded1');g.addColorStop(.48,'#f1bd79');g.addColorStop(1,'#789c89');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+// sun
+ctx.globalAlpha=.7;ctx.fillStyle='#fff1b4';ctx.beginPath();ctx.arc(W*.73,H*.26,48,0,7);ctx.fill();ctx.globalAlpha=1;
+// clouds
+ctx.fillStyle='rgba(255,255,255,.48)';for(let i=0;i<5;i++){let x=(i*290-t*.0008*8)% (W+300)-100,y=H*(.12+i%2*.09);ctx.beginPath();ctx.ellipse(x,y,70,12,0,0,7);ctx.ellipse(x+55,y+4,45,8,0,0,7);ctx.fill()}
+// distant islands
+poly([[0,H*.54],[0,H*.46],[W*.09,H*.43],[W*.18,H*.48],[W*.28,H*.45],[W*.39,H*.49],[W*.5,H*.44],[W*.62,H*.49],[W*.76,H*.44],[W*.88,H*.48],[W,H*.43],[W,H*.54]],'#799b83');
+// palms
+for(let i=0;i<8;i++){let x=(i*180-(cam*.25*180)%180)-30,y=H*.47-(i%3)*8;ctx.strokeStyle='#567968';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x-8,y-35,x+4,y-58);ctx.stroke();ctx.fillStyle='#6d8e72';for(let j=-2;j<3;j++){ctx.beginPath();ctx.ellipse(x+j*10-2,y-58,17,5,j*.55,0,7);ctx.fill()}}
+}
+function drawPlatform(p,idx){let A=project(p.x,p.y,0),B=project(p.x+p.w,p.y,0),C=project(p.x+p.w,p.y-p.d,0),D=project(p.x,p.y-p.d,0);
+// side walls
+poly([[A.x,A.y],[B.x,B.y],[C.x,C.y],[D.x,D.y]],idx%2?'#eee5cc':'#f6edda');
+poly([[D.x,D.y],[C.x,C.y],[C.x,C.y+H*.11],[D.x,D.y+H*.11]],'#d0c4a5');
+// roof top
+poly([[A.x,A.y-18],[B.x,B.y-18],[C.x,C.y-18],[D.x,D.y-18]],idx%2?'#fffaf0':'#fdf8e9');
+// hotel details
+let cx=(A.x+B.x)/2,top=A.y-18-(p.d*2);ctx.fillStyle='#fffaf0';ctx.fillRect(cx-p.w*5,top-50,p.w*10,52);
+ctx.fillStyle='#79aaa1';for(let r=0;r<3;r++){let bx=cx-p.w*4+r*p.w*4;for(let c=0;c<3;c++){ctx.fillRect(bx+c*18-8,top-40,10,13)}}
+// rail
+ctx.strokeStyle='#ece7d7';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(A.x,A.y-18);ctx.lineTo(B.x,B.y-18);ctx.stroke();ctx.lineWidth=2;for(let k=0;k<6;k++){let x=A.x+(B.x-A.x)*k/5;ctx.beginPath();ctx.moveTo(x,A.y-18);ctx.lineTo(x,A.y-30);ctx.stroke()}
+}
+function drawGem(g,t){if(g.got)return;let p=project(g.x,g.y);ctx.save();ctx.translate(p.x,p.y-18+Math.sin(t*.004+g.x)*5);ctx.rotate(t*.002);ctx.fillStyle='#d8ff43';ctx.shadowColor='#d8ff43';ctx.shadowBlur=18;ctx.beginPath();ctx.moveTo(0,-12);ctx.lineTo(9,0);ctx.lineTo(0,13);ctx.lineTo(-9,0);ctx.closePath();ctx.fill();ctx.restore()}
+function drawPlayer(t){let p=project(player.x,player.y);let lean=Math.max(-.28,Math.min(.28,player.vx*.15));ctx.save();ctx.translate(p.x,p.y-35);ctx.rotate(lean);
+// shadow
+ctx.fillStyle='rgba(17,48,40,.18);ctx.beginPath();ctx.ellipse(0,35,24,7,0,0,7);ctx.fill();
+// legs
+ctx.strokeStyle='#17211d';ctx.lineWidth=10;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-5,-2);ctx.lineTo(-11,22);ctx.moveTo(5,-2);ctx.lineTo(12,22);ctx.stroke();ctx.strokeStyle='#f1eee1';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-12,24);ctx.lineTo(-19,25);ctx.moveTo(13,24);ctx.lineTo(20,25);ctx.stroke();
+// torso
+ctx.fillStyle='#df6b43';roundRect(-15,-42,30,43,10,'#df6b43');ctx.fillStyle='#202923';ctx.fillRect(-16,-23,32,8);ctx.fillStyle='#171f1b';ctx.beginPath();ctx.arc(0,-49,12,0,7);ctx.fill();ctx.fillStyle='#8a5639';ctx.beginPath();ctx.arc(0,-52,10,0,7);ctx.fill();ctx.fillStyle='#17211d';ctx.beginPath();ctx.arc(-1,-56,11,Math.PI,Math.PI*2);ctx.fill();
+// arms
+ctx.strokeStyle='#8a5639';ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-12,-35);ctx.lineTo(-23,-18);ctx.moveTo(12,-35);ctx.lineTo(23,-20);ctx.stroke();ctx.restore()
+}
+function update(dt,t){if(!started||won||crash)return;let acc=(keys.ArrowLeft||keys.a?-.15:0)+(keys.ArrowRight||keys.d?.15:0);player.vx+=acc*dt*.06;player.vx*=.91;player.x+=player.vx*dt*.016;player.vy-=.018*dt;player.y+=player.vy*dt*.016;let on=false;for(const p of platforms){if(player.x>p.x-.45&&player.x<p.x+p.w+.45&&player.y>=p.y&&player.y<=p.y+1.1&&player.vy<=0){player.y=p.y;player.vy=0;on=true}}
+player.on=on;if(!on&&player.y<-4)reset();for(const g of gems){if(!g.got&&Math.hypot(player.x-g.x,player.y-g.y)<1.2){g.got=true;shards++;document.getElementById('shards').textContent=shards;toast()}}
+let cp=0;for(let i=0;i<platforms.length;i++)if(player.x>platforms[i].x+platforms[i].w*.5)cp=i+1;cp=Math.min(cp,6);if(cp!==checkpoint){checkpoint=cp;document.getElementById('cp').textContent=checkpoint+' / 6'}
+if(player.x>78){won=true;showWin();}cam+=(player.x-cam)*.035;if(cam<0)cam=0;
+let pct=Math.max(0,Math.min(100,player.x/78*100));document.getElementById('bar').style.width=pct+'%';let elapsed=Date.now()-t0;document.getElementById('time').textContent=Math.floor(elapsed/60000)+':'+String(Math.floor(elapsed/1000)%60).padStart(2,'0')}
+function jump(){if(!started||won)return;if(player.on){player.vy=.48;player.on=false;combo=Math.min(combo+1,9);document.getElementById('comboNum').textContent=combo}}
+function reset(){crash=true;setTimeout(()=>{player.x=0;player.y=4;player.vx=0;player.vy=0;cam=0;crash=false;checkpoint=0;document.getElementById('cp').textContent='0 / 6';combo=1;document.getElementById('comboNum').textContent='1'},500)}
+function toast(){let e=document.getElementById('toast');e.classList.add('show');setTimeout(()=>e.classList.remove('show'),700)}
+function showWin(){let m=document.getElementById('centerMsg');m.innerHTML='<div class="tag">Run complete</div><div class="title">Skyline<em>Conquered</em></div><button class="btn" onclick="location.reload()">Run again</button>';m.style.opacity=1}
+function loop(t){drawSky(t);for(let i=0;i<platforms.length;i++)drawPlatform(platforms[i],i);for(const g of gems)drawGem(g,t);drawPlayer(t);update(16.67,t);requestAnimationFrame(loop)}requestAnimationFrame(loop);
+addEventListener('keydown',e=>{keys[e.key]=true;if(e.code==='Space'||e.key==='ArrowUp'||e.key==='w')jump()});addEventListener('keyup',e=>keys[e.key]=false);
+function startRun(){started=true;t0=Date.now();player.x=0;player.y=4;document.getElementById('centerMsg').style.display='none'}document.getElementById('start').onclick=startRun;
+function bind(id,key){let e=document.getElementById(id);e.onpointerdown=e=>{e.prevent();keys[key]=true};e.onpointerup=e=>{e.prevent();keys[key]=false};e.onpointerleave=()=>keys[key]=false}bind('left','ArrowLeft');bind('right','ArrowRight');document.getElementById('jumpBtn').onpointerdown=e=>{e.preventDefault();jump()};
+</script>
+</body>
+</html>
